@@ -1,0 +1,16 @@
+{
+  "name": "cs2-hud-overlay",
+  "version": "1.0.0",
+  "description": "CS2 HUD Overlay Desktop App with Style Editor",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "nodemon --exec electron ."
+  },
+  "dependencies": {
+    "electron": "^27.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
