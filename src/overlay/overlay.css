@@ -1,0 +1,170 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: transparent;
+  font-family: Arial, sans-serif;
+  color: #ffffff;
+  overflow: hidden;
+  -webkit-app-region: drag;
+}
+
+.hud-container {
+  background: rgba(26, 26, 26, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  padding: 15px;
+  border: 1px solid rgba(0, 255, 0, 0.3);
+  width: 400px;
+  font-size: 14px;
+}
+
+/* Player Section */
+.player-section {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.player-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #00ff00;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.player-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.stat-label {
+  width: 40px;
+  color: #aaaaaa;
+  text-transform: uppercase;
+}
+
+.health-bar,
+.armor-bar {
+  flex: 1;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(100, 100, 100, 0.5);
+}
+
+.health-fill {
+  height: 100%;
+  background: linear-gradient(to right, #00ff00, #ffff00);
+  transition: width 0.1s ease;
+}
+
+.armor-fill {
+  height: 100%;
+  background: linear-gradient(to right, #0088ff, #00ff00);
+  transition: width 0.1s ease;
+}
+
+.stat-value {
+  width: 35px;
+  text-align: right;
+  color: #ffffff;
+}
+
+/* Weapon Section */
+.weapon-section {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.weapon-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #00ff00;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.weapon-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.ammo-info {
+  color: #ffff00;
+}
+
+.ammo-label {
+  color: #aaaaaa;
+  margin-left: 2px;
+}
+
+.damage-info {
+  color: #ff6600;
+}
+
+.damage-label {
+  color: #aaaaaa;
+  margin-right: 5px;
+}
+
+/* Teammates Section */
+.teammates-section {
+  margin-top: 10px;
+}
+
+.section-title {
+  font-size: 11px;
+  color: #00ff00;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.teammates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.teammate {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 2px solid #00ff00;
+  border-radius: 2px;
+  font-size: 12px;
+}
+
+.teammate-name {
+  color: #ffffff;
+}
+
+.teammate-hp {
+  color: #00ff00;
+  font-weight: bold;
+}
+
+.teammate-hp.low {
+  color: #ff6600;
+}
+
+.teammate-hp.critical {
+  color: #ff0000;
+}
