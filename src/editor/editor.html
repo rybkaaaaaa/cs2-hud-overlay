@@ -10,6 +10,34 @@
   <div class="editor-container">
     <h1>HUD Style Editor</h1>
 
+    <!-- Demo Controls (NEW) -->
+    <div class="settings-group demo-section">
+      <h2>📽️ Demo Mode (For Commentators)</h2>
+      
+      <div class="setting-item">
+        <label>Load Demo File:</label>
+        <div class="demo-buttons">
+          <button id="selectDemoBtn" class="btn-demo">Select .DEM File</button>
+          <span id="demoFileName" style="margin-left: 10px; color: #999;">No file selected</span>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <label>Demo Status:</label>
+        <div style="display: flex; gap: 10px;">
+          <button id="parseDemoBtn" class="btn-primary" disabled>Parse Demo</button>
+          <button id="stopDemoBtn" class="btn-secondary" disabled>Stop Demo</button>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <label>Status:</label>
+        <div id="demoStatus" style="padding: 10px; background: #2a2a2a; border-radius: 5px; color: #00ff00;">
+          ❌ No demo loaded
+        </div>
+      </div>
+    </div>
+
     <!-- Color Settings -->
     <div class="settings-group">
       <h2>Colors</h2>
