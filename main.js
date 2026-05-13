@@ -1,12 +1,14 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const express = require('express');
 const http = require('http');
+const DemoParser = require('./demo-parser');
 
 let overlayWindow, editorWindow;
 const configPath = path.join(app.getPath('userData'), 'config.json');
 let gsiServer;
+let demoParser = new DemoParser();
 
 // Inventory mapping for weapon names
 const weaponNames = {
@@ -55,7 +57,9 @@ let currentGameState = {
     deaths: 0,
     assists: 0,
     team: i < 5 ? 'CT' : 'T'
-  }))
+  })),
+  demoMode: false,
+  demoPath: null
 };
 
 const defaultConfig = {
@@ -84,7 +88,6 @@ function saveConfig(config) {
 function parseWeaponName(weaponData) {
   if (!weaponData) return 'Unknown';
   
-  // Check inventory first
   if (weaponData.name) {
     return weaponNames[weaponData.name] || weaponData.name;
   }
@@ -99,7 +102,6 @@ function parsePlayersFromGSI(gameState) {
     return updatedPlayers;
   }
 
-  // Parse all players from GSI data
   Object.keys(gameState.players).forEach((steamId) => {
     const playerData = gameState.players[steamId];
     
@@ -108,10 +110,8 @@ function parsePlayersFromGSI(gameState) {
     const slot = playerData.observer_slot || 0;
     if (slot < 0 || slot >= 10) return;
 
-    // Determine team
     const team = playerData.team === 'CT' ? 'CT' : playerData.team === 'T' ? 'T' : 'Unassigned';
 
-    // Get current weapon
     let currentWeapon = 'Unknown';
     let ammo = 0;
 
@@ -125,7 +125,6 @@ function parsePlayersFromGSI(gameState) {
       });
     }
 
-    // Get stats
     const stats = playerData.match_stats || {};
     const state = playerData.state || {};
 
@@ -154,13 +153,12 @@ function startGSIServer() {
   expressApp.post('/', (req, res) => {
     const gameState = req.body;
     
-    // Parse GSI data
     if (gameState && gameState.players) {
       currentGameState.players = parsePlayersFromGSI(gameState);
+      currentGameState.demoMode = false;
       
       console.log(`[GSI] Received update - Players: ${currentGameState.players.filter(p => p.hp > 0).length}`);
 
-      // Send update to overlay
       if (overlayWindow && !overlayWindow.isDestroyed()) {
         overlayWindow.webContents.send('game-state-updated', currentGameState);
       }
@@ -239,3 +237,54 @@ ipcMain.handle('save-config', (event, config) => {
 });
 
 ipcMain.handle('get-game-state', () => currentGameState);
+
+// Demo parsing handlers
+ipcMain.handle('select-demo-file', async (event) => {
+  const result = await dialog.showOpenDialog(editorWindow, {
+    properties: ['openFile'],
+    filters: [
+      { name: 'CS2 Demo Files', extensions: ['dem'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]
+  });
+
+  if (result.canceled) return null;
+  return result.filePaths[0];
+});
+
+ipcMain.handle('parse-demo', async (event, demoPath) => {
+  try {
+    console.log(`📂 Starting demo parse: ${demoPath}`);
+    demoParser.resetPlayers();
+    
+    await demoParser.parseDemo(demoPath);
+    
+    const players = demoParser.getPlayers();
+    currentGameState.players = players;
+    currentGameState.demoMode = true;
+    currentGameState.demoPath = demoPath;
+
+    console.log('✅ Demo parsed successfully');
+    
+    if (overlayWindow && !overlayWindow.isDestroyed()) {
+      overlayWindow.webContents.send('game-state-updated', currentGameState);
+    }
+
+    return { success: true, players };
+  } catch (error) {
+    console.error('❌ Demo parse error:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('stop-demo', (event) => {
+  demoParser.resetPlayers();
+  currentGameState.demoMode = false;
+  currentGameState.demoPath = null;
+  
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    overlayWindow.webContents.send('game-state-updated', currentGameState);
+  }
+
+  return true;
+});
