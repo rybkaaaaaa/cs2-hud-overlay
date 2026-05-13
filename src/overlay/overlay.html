@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CS2 HUD Overlay</title>
+  <link rel="stylesheet" href="overlay.css">
+</head>
+<body>
+  <div class="hud-container">
+    <!-- Player Info -->
+    <div class="player-section">
+      <div class="player-name" id="playerName">Player123</div>
+      <div class="player-stats">
+        <div class="stat-item">
+          <span class="stat-label">HP</span>
+          <div class="health-bar">
+            <div class="health-fill" id="healthFill" style="width: 85%"></div>
+          </div>
+          <span class="stat-value" id="hpValue">85</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">ARMOR</span>
+          <div class="armor-bar">
+            <div class="armor-fill" id="armorFill" style="width: 100%"></div>
+          </div>
+          <span class="stat-value" id="armorValue">100</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weapon Info -->
+    <div class="weapon-section">
+      <div class="weapon-name" id="weaponName">AK-47</div>
+      <div class="weapon-stats">
+        <div class="ammo-info">
+          <span id="ammoCount">30</span>
+          <span class="ammo-label">/ 120</span>
+        </div>
+        <div class="damage-info">
+          <span class="damage-label">DMG:</span>
+          <span id="damageValue">31</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Teammates -->
+    <div class="teammates-section">
+      <div class="section-title">TEAMMATES</div>
+      <div class="teammates-list">
+        <div class="teammate">
+          <span class="teammate-name">Teammate1</span>
+          <span class="teammate-hp">100</span>
+        </div>
+        <div class="teammate">
+          <span class="teammate-name">Teammate2</span>
+          <span class="teammate-hp">75</span>
+        </div>
+        <div class="teammate">
+          <span class="teammate-name">Teammate3</span>
+          <span class="teammate-hp">50</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="overlay.js"></script>
+</body>
+</html>
