@@ -8,42 +8,41 @@
 </head>
 <body>
   <div class="editor-container">
-    <h1>HUD Style Editor</h1>
+    <h1>🎮 CS2 HUD Overlay</h1>
 
-    <!-- Demo Controls (NEW) -->
+    <!-- Mode Status (NEW - SIMPLIFIED) -->
+    <div class="settings-group mode-status-section">
+      <div id="modeStatus" class="mode-indicator">
+        <div class="mode-icon">⏳</div>
+        <div class="mode-text">
+          <div class="mode-title">Waiting for Data...</div>
+          <div class="mode-subtitle">Start LIVE spectate or load a DEMO</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Demo Controls (SIMPLIFIED) -->
     <div class="settings-group demo-section">
-      <h2>📽️ Demo Mode (For Commentators)</h2>
+      <h2>📽️ Demo Mode</h2>
       
       <div class="setting-item">
-        <label>Load Demo File:</label>
         <div class="demo-buttons">
-          <button id="selectDemoBtn" class="btn-demo">Select .DEM File</button>
-          <span id="demoFileName" style="margin-left: 10px; color: #999;">No file selected</span>
+          <button id="selectDemoBtn" class="btn-demo">📁 Load Demo</button>
+          <button id="stopDemoBtn" class="btn-demo btn-stop" disabled>⏹️ Stop Demo</button>
         </div>
       </div>
 
       <div class="setting-item">
-        <label>Demo Status:</label>
-        <div style="display: flex; gap: 10px;">
-          <button id="parseDemoBtn" class="btn-primary" disabled>Parse Demo</button>
-          <button id="stopDemoBtn" class="btn-secondary" disabled>Stop Demo</button>
-        </div>
-      </div>
-
-      <div class="setting-item">
-        <label>Status:</label>
-        <div id="demoStatus" style="padding: 10px; background: #2a2a2a; border-radius: 5px; color: #00ff00;">
-          ❌ No demo loaded
-        </div>
+        <span id="demoFileName" class="demo-file-info">No demo loaded</span>
       </div>
     </div>
 
     <!-- Color Settings -->
     <div class="settings-group">
-      <h2>Colors</h2>
+      <h2>🎨 Colors</h2>
       
       <div class="setting-item">
-        <label for="bgColor">Background Color:</label>
+        <label for="bgColor">Background:</label>
         <div class="color-input-group">
           <input type="color" id="bgColor" value="#1a1a1a">
           <input type="text" id="bgColorText" value="#1a1a1a" readonly>
@@ -67,9 +66,9 @@
       </div>
     </div>
 
-    <!-- Opacity Settings -->
+    <!-- Appearance Settings -->
     <div class="settings-group">
-      <h2>Appearance</h2>
+      <h2>✨ Appearance</h2>
 
       <div class="setting-item">
         <label for="opacity">Opacity:</label>
@@ -86,11 +85,6 @@
           <span id="fontSizeValue">14px</span>
         </div>
       </div>
-    </div>
-
-    <!-- Font Settings -->
-    <div class="settings-group">
-      <h2>Font</h2>
 
       <div class="setting-item">
         <label for="fontFamily">Font Family:</label>
@@ -100,62 +94,26 @@
           <option value="Georgia">Georgia</option>
           <option value="Courier New">Courier New</option>
           <option value="Trebuchet MS">Trebuchet MS</option>
-          <option value="Comic Sans MS">Comic Sans MS</option>
         </select>
       </div>
     </div>
 
-    <!-- Player Data -->
+    <!-- Presets -->
     <div class="settings-group">
-      <h2>Player Data</h2>
-
-      <div class="setting-item">
-        <label for="playerName">Nickname:</label>
-        <input type="text" id="playerName" value="Player123">
-      </div>
-
-      <div class="setting-item">
-        <label for="playerHP">HP:</label>
-        <input type="number" id="playerHP" min="0" max="100" value="85">
-      </div>
-
-      <div class="setting-item">
-        <label for="playerArmor">Armor:</label>
-        <input type="number" id="playerArmor" min="0" max="100" value="100">
-      </div>
-
-      <div class="setting-item">
-        <label for="weapon">Weapon:</label>
-        <input type="text" id="weapon" value="AK-47">
-      </div>
-
-      <div class="setting-item">
-        <label for="ammo">Ammo:</label>
-        <input type="number" id="ammo" min="0" value="30">
-      </div>
-
-      <div class="setting-item">
-        <label for="damage">Damage:</label>
-        <input type="number" id="damage" min="0" value="31">
-      </div>
-    </div>
-
-    <!-- Preset Management -->
-    <div class="settings-group">
-      <h2>Presets</h2>
+      <h2>💾 Presets</h2>
       <div class="preset-buttons">
         <input type="text" id="presetName" placeholder="Preset name">
-        <button id="savePresetBtn">Save Preset</button>
-        <button id="loadPresetBtn">Load Preset</button>
-        <button id="deletePresetBtn">Delete Preset</button>
+        <button id="savePresetBtn">Save</button>
+        <button id="loadPresetBtn">Load</button>
+        <button id="deletePresetBtn">Delete</button>
       </div>
       <select id="presetList"></select>
     </div>
 
     <!-- Action Buttons -->
     <div class="action-buttons">
-      <button id="applyBtn" class="btn-primary">Apply Changes</button>
-      <button id="resetBtn" class="btn-secondary">Reset to Default</button>
+      <button id="applyBtn" class="btn-primary">✅ Apply Changes</button>
+      <button id="resetBtn" class="btn-secondary">↺ Reset to Default</button>
     </div>
   </div>
 
