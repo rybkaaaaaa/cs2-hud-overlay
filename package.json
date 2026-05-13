@@ -1,14 +1,15 @@
 {
   "name": "cs2-hud-overlay",
   "version": "1.0.0",
-  "description": "CS2 HUD Overlay Desktop App with Style Editor",
+  "description": "CS2 HUD Overlay with Real-time 10 Player Stats",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dev": "nodemon --exec electron ."
   },
   "dependencies": {
-    "electron": "^27.0.0"
+    "electron": "^27.0.0",
+    "express": "^4.18.2"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
