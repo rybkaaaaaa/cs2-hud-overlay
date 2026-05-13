@@ -10,6 +10,12 @@ const configPath = path.join(app.getPath('userData'), 'config.json');
 let gsiServer;
 let demoParser = new DemoParser();
 
+// Auto-detection variables
+let gsiActive = false;
+let lastGSIUpdate = 0;
+const GSI_TIMEOUT = 5000; // 5 seconds timeout
+let gsiCheckInterval;
+
 // Inventory mapping for weapon names
 const weaponNames = {
   'weapon_ak47': 'AK-47',
@@ -59,7 +65,9 @@ let currentGameState = {
     team: i < 5 ? 'CT' : 'T'
   })),
   demoMode: false,
-  demoPath: null
+  demoPath: null,
+  gsiMode: false,
+  mode: 'idle' // 'idle', 'live', 'demo'
 };
 
 const defaultConfig = {
@@ -154,10 +162,24 @@ function startGSIServer() {
     const gameState = req.body;
     
     if (gameState && gameState.players) {
+      lastGSIUpdate = Date.now();
+      
+      // Mark as LIVE mode
+      if (!gsiActive) {
+        gsiActive = true;
+        currentGameState.mode = 'live';
+        currentGameState.gsiMode = true;
+        console.log('🎮 LIVE MODE ACTIVATED - GSI Data Received!');
+        
+        if (editorWindow && !editorWindow.isDestroyed()) {
+          editorWindow.webContents.send('mode-changed', { mode: 'live', message: '🎮 LIVE MODE' });
+        }
+      }
+      
       currentGameState.players = parsePlayersFromGSI(gameState);
       currentGameState.demoMode = false;
       
-      console.log(`[GSI] Received update - Players: ${currentGameState.players.filter(p => p.hp > 0).length}`);
+      console.log(`[GSI] Update received - ${currentGameState.players.filter(p => p.hp > 0).length} players`);
 
       if (overlayWindow && !overlayWindow.isDestroyed()) {
         overlayWindow.webContents.send('game-state-updated', currentGameState);
@@ -171,6 +193,25 @@ function startGSIServer() {
   gsiServer.listen(3000, 'localhost', () => {
     console.log('✅ GSI Server listening on http://localhost:3000');
   });
+
+  // Check if GSI is still active
+  gsiCheckInterval = setInterval(() => {
+    const timeSinceLastUpdate = Date.now() - lastGSIUpdate;
+    
+    if (timeSinceLastUpdate > GSI_TIMEOUT && gsiActive) {
+      gsiActive = false;
+      currentGameState.mode = 'idle';
+      currentGameState.gsiMode = false;
+      console.log('❌ LIVE MODE TIMEOUT - No GSI data received');
+      
+      if (editorWindow && !editorWindow.isDestroyed()) {
+        editorWindow.webContents.send('mode-changed', { 
+          mode: 'idle', 
+          message: '⏳ Waiting for LIVE data or load a DEMO...' 
+        });
+      }
+    }
+  }, 1000);
 }
 
 function createOverlayWindow(config) {
@@ -200,7 +241,7 @@ function createOverlayWindow(config) {
 function createEditorWindow(config) {
   editorWindow = new BrowserWindow({
     width: 600,
-    height: 800,
+    height: 900,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -218,9 +259,20 @@ app.on('ready', () => {
   startGSIServer();
   createOverlayWindow(config);
   createEditorWindow(config);
+  
+  // Send initial state to editor
+  setTimeout(() => {
+    if (editorWindow && !editorWindow.isDestroyed()) {
+      editorWindow.webContents.send('mode-changed', { 
+        mode: 'idle', 
+        message: '⏳ Waiting for LIVE data or load a DEMO...' 
+      });
+    }
+  }, 1000);
 });
 
 app.on('window-all-closed', () => {
+  if (gsiCheckInterval) clearInterval(gsiCheckInterval);
   if (gsiServer) gsiServer.close();
   if (process.platform !== 'darwin') app.quit();
 });
@@ -237,6 +289,8 @@ ipcMain.handle('save-config', (event, config) => {
 });
 
 ipcMain.handle('get-game-state', () => currentGameState);
+
+ipcMain.handle('get-mode', () => currentGameState.mode);
 
 // Demo parsing handlers
 ipcMain.handle('select-demo-file', async (event) => {
@@ -263,11 +317,20 @@ ipcMain.handle('parse-demo', async (event, demoPath) => {
     currentGameState.players = players;
     currentGameState.demoMode = true;
     currentGameState.demoPath = demoPath;
+    currentGameState.mode = 'demo';
+    currentGameState.gsiMode = false;
 
     console.log('✅ Demo parsed successfully');
     
     if (overlayWindow && !overlayWindow.isDestroyed()) {
       overlayWindow.webContents.send('game-state-updated', currentGameState);
+    }
+
+    if (editorWindow && !editorWindow.isDestroyed()) {
+      editorWindow.webContents.send('mode-changed', { 
+        mode: 'demo', 
+        message: `📽️ DEMO MODE - ${path.basename(demoPath)}` 
+      });
     }
 
     return { success: true, players };
@@ -281,9 +344,17 @@ ipcMain.handle('stop-demo', (event) => {
   demoParser.resetPlayers();
   currentGameState.demoMode = false;
   currentGameState.demoPath = null;
+  currentGameState.mode = 'idle';
   
   if (overlayWindow && !overlayWindow.isDestroyed()) {
     overlayWindow.webContents.send('game-state-updated', currentGameState);
+  }
+
+  if (editorWindow && !editorWindow.isDestroyed()) {
+    editorWindow.webContents.send('mode-changed', { 
+      mode: 'idle', 
+      message: '⏳ Waiting for LIVE data or load a DEMO...' 
+    });
   }
 
   return true;
