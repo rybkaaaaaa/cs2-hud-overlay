@@ -1,5 +1,7 @@
 let currentConfig = {};
 let presets = JSON.parse(localStorage.getItem('hud-presets')) || {};
+let selectedDemoPath = null;
+let isDemoRunning = false;
 
 // Initialize editor
 async function initEditor() {
@@ -7,6 +9,7 @@ async function initEditor() {
   loadConfigToUI(currentConfig);
   setupEventListeners();
   updatePresetList();
+  setupDemoControls();
 }
 
 function loadConfigToUI(config) {
@@ -30,12 +33,14 @@ function loadConfigToUI(config) {
   document.getElementById('fontFamily').value = overlay.fontFamily;
 
   // Player data
-  document.getElementById('playerName').value = player.nickname;
-  document.getElementById('playerHP').value = player.hp;
-  document.getElementById('playerArmor').value = player.armor;
-  document.getElementById('weapon').value = player.weapon;
-  document.getElementById('ammo').value = player.ammo;
-  document.getElementById('damage').value = player.damage;
+  if (player) {
+    document.getElementById('playerName').value = player.nickname || '';
+    document.getElementById('playerHP').value = player.hp || 85;
+    document.getElementById('playerArmor').value = player.armor || 100;
+    document.getElementById('weapon').value = player.weapon || 'AK-47';
+    document.getElementById('ammo').value = player.ammo || 30;
+    document.getElementById('damage').value = player.damage || 31;
+  }
 }
 
 function setupEventListeners() {
@@ -68,6 +73,97 @@ function setupEventListeners() {
   document.getElementById('deletePresetBtn').addEventListener('click', deletePreset);
 }
 
+function setupDemoControls() {
+  document.getElementById('selectDemoBtn').addEventListener('click', selectDemoFile);
+  document.getElementById('parseDemoBtn').addEventListener('click', parseDemoFile);
+  document.getElementById('stopDemoBtn').addEventListener('click', stopDemo);
+}
+
+async function selectDemoFile() {
+  try {
+    const demoPath = await window.electronAPI.selectDemoFile();
+    if (demoPath) {
+      selectedDemoPath = demoPath;
+      const fileName = demoPath.split('\\').pop();
+      document.getElementById('demoFileName').textContent = `✅ ${fileName}`;
+      document.getElementById('demoFileName').style.color = '#00ff00';
+      document.getElementById('parseDemoBtn').disabled = false;
+      updateDemoStatus('Demo selected: ' + fileName, 'info');
+    }
+  } catch (error) {
+    console.error('Error selecting demo:', error);
+    updateDemoStatus('Error selecting file', 'error');
+  }
+}
+
+async function parseDemoFile() {
+  if (!selectedDemoPath) {
+    updateDemoStatus('No demo file selected', 'error');
+    return;
+  }
+
+  try {
+    document.getElementById('parseDemoBtn').disabled = true;
+    updateDemoStatus('Parsing demo... Please wait...', 'loading');
+
+    const result = await window.electronAPI.parseDemo(selectedDemoPath);
+    
+    if (result.success) {
+      isDemoRunning = true;
+      document.getElementById('selectDemoBtn').disabled = true;
+      document.getElementById('stopDemoBtn').disabled = false;
+      document.getElementById('parseDemoBtn').disabled = true;
+      updateDemoStatus(`✅ Demo loaded! ${result.players.length} players detected`, 'success');
+    } else {
+      updateDemoStatus(`❌ Error: ${result.error}`, 'error');
+      document.getElementById('parseDemoBtn').disabled = false;
+    }
+  } catch (error) {
+    console.error('Error parsing demo:', error);
+    updateDemoStatus(`Error: ${error.message}`, 'error');
+    document.getElementById('parseDemoBtn').disabled = false;
+  }
+}
+
+async function stopDemo() {
+  try {
+    await window.electronAPI.stopDemo();
+    isDemoRunning = false;
+    selectedDemoPath = null;
+    
+    document.getElementById('selectDemoBtn').disabled = false;
+    document.getElementById('parseDemoBtn').disabled = true;
+    document.getElementById('stopDemoBtn').disabled = true;
+    document.getElementById('demoFileName').textContent = 'No file selected';
+    document.getElementById('demoFileName').style.color = '#999';
+    
+    updateDemoStatus('❌ Demo stopped', 'info');
+  } catch (error) {
+    console.error('Error stopping demo:', error);
+    updateDemoStatus(`Error: ${error.message}`, 'error');
+  }
+}
+
+function updateDemoStatus(message, type = 'info') {
+  const statusEl = document.getElementById('demoStatus');
+  let emoji = '❌';
+  let color = '#ff6b6b';
+  
+  if (type === 'success') {
+    emoji = '✅';
+    color = '#00ff00';
+  } else if (type === 'loading') {
+    emoji = '⏳';
+    color = '#ffff00';
+  } else if (type === 'info') {
+    emoji = 'ℹ️';
+    color = '#00aaff';
+  }
+  
+  statusEl.textContent = emoji + ' ' + message;
+  statusEl.style.color = color;
+}
+
 function getCurrentConfigFromUI() {
   return {
     overlay: {
@@ -77,10 +173,10 @@ function getCurrentConfigFromUI() {
       opacity: parseFloat(document.getElementById('opacity').value),
       fontSize: parseInt(document.getElementById('fontSize').value),
       fontFamily: document.getElementById('fontFamily').value,
-      posX: currentConfig.overlay.posX,
-      posY: currentConfig.overlay.posY,
-      width: currentConfig.overlay.width,
-      height: currentConfig.overlay.height
+      posX: currentConfig.overlay?.posX || 50,
+      posY: currentConfig.overlay?.posY || 50,
+      width: currentConfig.overlay?.width || 400,
+      height: currentConfig.overlay?.height || 300
     },
     player: {
       nickname: document.getElementById('playerName').value,
